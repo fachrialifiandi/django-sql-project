@@ -1,11 +1,17 @@
 from django.shortcuts import render
-from django.db import connection
-from store.models import Product, Collection, Order, OrderItem
+from rest_framework.views import APIView
+import logging
+import requests
 
+logger = logging.getLogger(__name__)
 
-def say_hello(request):
-
-    query_set = 1
-
-    return render(request, 'hello.html', {'name': 'Alif', 'result': list(query_set)})
-    # return render(request, 'hello.html', {'name': 'Alif', 'result': result})
+class HelloView(APIView):
+    def get(self, request):
+        try:
+            logger.info('Calling httpbin')
+            response = requests.get('https://httpbin.org/delay/2')
+            logger.info('Received Response')
+            data = response.json()
+        except request.ConnectionError:
+            logger.critical('httpbin is offline')
+        return render (request, 'hello.html', {'name': data})

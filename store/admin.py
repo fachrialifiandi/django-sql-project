@@ -39,6 +39,16 @@ class CollectionAdmin(admin.ModelAdmin):
         return super().get_queryset(request).annotate(products_count=Count('products'))
 
 
+class ProductImageInLine(admin.TabularInline):
+    model = models.ProductImage
+    readonly_fields = ['thumbnail']
+
+    def thumbnail(self, instance):
+        if instance.image.name != '':
+            return format_html('<img src="{}" class="thumbnail" />', instance.image.url)
+        return ''
+
+
 @admin.register(models.Product)
 class ProductAdmin(admin.ModelAdmin):
     autocomplete_fields = ['collection']
@@ -46,6 +56,7 @@ class ProductAdmin(admin.ModelAdmin):
         'slug': ['title']
     }
     actions = ['clear_inventory']
+    inlines = [ProductImageInLine]
     list_display = ['title', 'unit_price',
                     'inventory_status', 'collection_title']
     search_fields = ['title']
@@ -71,6 +82,11 @@ class ProductAdmin(admin.ModelAdmin):
             f'{updated_count} product were sucessfully update .',
             messages.ERROR
         )
+
+    class Media:
+        css = {
+            'all': ['store/styles.css']
+        }
 
 
 @admin.register(models.Customer)
